@@ -1,8 +1,20 @@
-[![GitHub last commit](https://img.shields.io/github/last-commit/jaggedsoft/php-binance-api.svg)](#)
-[![Packagist Downloads](https://img.shields.io/packagist/dt/jaggedsoft/php-binance-api.svg)](https://packagist.org/packages/jaggedsoft/php-binance-api)
+[![Latest Version](https://img.shields.io/github/release/jaggedsoft/php-binance-api.svg?style=flat-square)](https://github.com/jaggedsoft/php-binance-api/releases) 
+[![GitHub last commit](https://img.shields.io/github/last-commit/jaggedsoft/php-binance-api.svg?style=flat-square)](#) 
+[![HitCount](http://hits.dwyl.io/jaggedsoft/php-binance-api.svg)](http://hits.dwyl.io/jaggedsoft/php-binance-api) 
+[![Packagist Downloads](https://img.shields.io/packagist/dt/jaggedsoft/php-binance-api.svg?style=flat-square)](https://packagist.org/packages/jaggedsoft/php-binance-api) 
+
+
+[![Build Status](https://travis-ci.org/jaggedsoft/php-binance-api.svg?branch=master&style=flat-square)](https://travis-ci.org/jaggedsoft/php-binance-api) 
+[![Coverage Status](https://coveralls.io/repos/github/jaggedsoft/php-binance-api/badge.svg?branch=master&style=flat-square)](https://coveralls.io/github/jaggedsoft/php-binance-api) 
+[![CodeCov](https://codecov.io/gh/jaggedsoft/php-binance-api/branch/master/graph/badge.svg?style=flat-square)](https://codecov.io/github/jaggedsoft/php-binance-api/) 
+[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/683459a5a71c4875956cf23078a0c39b)](https://www.codacy.com/app/dmzoneill/php-binance-api?utm_source=github.com&utm_medium=referral&utm_content=jaggedsoft/php-binance-api&utm_campaign=Badge_Coverage)
+[![Code consistency](https://squizlabs.github.io/PHP_CodeSniffer/analysis/jaggedsoft/php-binance-api/grade.svg?style=flat-square)](https://squizlabs.github.io/PHP_CodeSniffer/analysis/jaggedsoft/php-binance-api)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/683459a5a71c4875956cf23078a0c39b)](https://www.codacy.com/app/dmzoneill/php-binance-api?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=jaggedsoft/php-binance-api&amp;utm_campaign=Badge_Grade)
 
 # PHP Binance API
-This project is designed to help you make your own projects that interact with the [Binance API](https://www.binance.com/restapipub.html). You can stream candlestick chart data, market depth, or use other advanced features such as setting stop losses and iceberg orders. This project seeks to have complete API coverage including WebSockets.
+This project is designed to help you make your own projects that interact with the [Binance API](https://github.com/binance-exchange/binance-official-api-docs). You can stream candlestick chart data, market depth, or use other advanced features such as setting stop losses and iceberg orders. This project seeks to have complete API coverage including WebSockets.
+
+> Special thank you to all contributors: **dmzoneill, dxjones, jokaorgua,** and others!! *This package needs help from the community.* Improvements contributed to this project are encouraged, and you will be given full credit for changes. All pull requests welcome.
 
 #### Installation
 ```
@@ -25,23 +37,47 @@ php composer.phar require "jaggedsoft/php-binance-api @dev"
 ```
 
 #### Windows:
-[Download installer for Windows](https://getcomposer.org/doc/00-intro.md#installation-windows)
-
-
+[Download installer for Windows](https://github.com/jaggedsoft/php-binance-api/#installing-on-windows)
 
 </details>
 
 #### Getting started
+`composer require jaggedsoft/php-binance-api`
 ```php
 require 'vendor/autoload.php';
+// 1. config in home directory
+$api = new Binance\API();
+// 2. config in specified file
+$api = new Binance\API( "somefile.json" );
+// 3. config by specifying api key and secret
 $api = new Binance\API("<api key>","<secret>");
+// 4. Rate Limiting Support
+$api = new Binance\RateLimiter(new Binance\API());
+```
+See [additional options](https://github.com/jaggedsoft/php-binance-api/#config-file-in-home-directory) for more options and help installing on Windows
+
+#### Rate Limiting
+This Feature is in beta, you can start using rate limiting as a wrapper to the main API class.
+```php
+$api = new Binance\API( "somefile.json" );
+$api = new Binance\RateLimiter($api);
+while(true) {
+   $api->openOrders("BNBBTC"); // rate limited
+}
 ```
 
-#### Get latest price of a symbol
+#### Security - Ca Bunldes
+If you don't know what a CA bundle is, no action is required.  If you do know and you don't like our auto upate feature.
+You can disable the downloading of the CA Bundle
+```php
+$api = new Binance\API( "somefile.json" );
+$api->caOverride = true;
+```
+
+#### Get latest price of all symbols
 ```php
 $ticker = $api->prices();
-print_r($ticker); // List prices of all symbols
-echo "Price of BNB: {$ticker['BNBBTC']} BTC.".PHP_EOL;
+print_r($ticker);
 ```
 
 <details>
@@ -135,8 +171,53 @@ Price of BNB: 0.00021479 BTC.
 ```
 </details>
 
+#### Get latest price of a symbol
+```php
+$price = $api->price("BNBBTC");
+echo "Price of BNB: {$price} BTC.".PHP_EOL;
+```
+
+#### Get miniTicker for all symbols
+```php
+$api->miniTicker(function($api, $ticker) {
+	print_r($ticker);
+});
+```
+
+<details>
+ <summary>View Response</summary>
+
+```
+    [7] => Array
+        (
+            [symbol] => LTCUSDT
+            [close] => 182.85000000
+            [open] => 192.62000000
+            [high] => 195.25000000
+            [low] => 173.08000000
+            [volume] => 238603.66451000
+            [quoteVolume] => 43782422.11276660
+            [eventTime] => 1520497914289
+        )
+
+    [8] => Array
+        (
+            [symbol] => ICXBTC
+            [close] => 0.00029790
+            [open] => 0.00030550
+            [high] => 0.00031600
+            [low] => 0.00026850
+            [volume] => 8468620.53000000
+            [quoteVolume] => 2493.60935828
+            [eventTime] => 1520497915200
+        )
+
+```
+</details>
+
 #### Get balances for all of your positions, including estimated BTC value
 ```php
+$ticker = $api->prices(); // Make sure you have an updated ticker object for this to work
 $balances = $api->balances($ticker);
 print_r($balances);
 echo "BTC owned: ".$balances['BTC']['available'].PHP_EOL;
@@ -786,20 +867,22 @@ $order = $api->marketSell("ETHBTC", $quantity);
 #### Place a STOP LOSS order
 ```php
 // When the stop is reached, a stop order becomes a market order
+$type = "STOP_LOSS"; // Set the type STOP_LOSS (market) or STOP_LOSS_LIMIT, and TAKE_PROFIT (market) or TAKE_PROFIT_LIMIT
 $quantity = 1;
 $price = 0.5; // Try to sell it for 0.5 btc
 $stopPrice = 0.4; // Sell immediately if price goes below 0.4 btc
-$order = $api->sell("BNBBTC", $quantity, $price, "LIMIT", ["stopPrice"=>$stopPrice]);
+$order = $api->sell("BNBBTC", $quantity, $price, $type, ["stopPrice"=>$stopPrice]);
 print_r($order);
 ```
 
 #### Place an ICEBERG order
 ```php
 // Iceberg orders are intended to conceal the true order quantity.
+$type = "LIMIT"; // LIMIT, STOP_LOSS_LIMIT, and TAKE_PROFIT_LIMIT
 $quantity = 1;
 $price = 0.5;
 $icebergQty = 10;
-$order = $api->sell("BNBBTC", $quantity, $price, "LIMIT", ["icebergQty"=>$icebergQty]);
+$order = $api->sell("BNBBTC", $quantity, $price, $type, ["icebergQty"=>$icebergQty]);
 print_r($order);
 ```
 
@@ -943,11 +1026,48 @@ print_r($ticks);
 
 ## WebSocket API
 
+#### miniTicker return the latest candlestick information for every symbol
+```php
+$api->miniTicker(function($api, $ticker) {
+	print_r($ticker);
+});
+```
+
+<details>
+ <summary>View Response</summary>
+
+```
+    [18] => Array
+        (
+            [symbol] => ONTBNB
+            [close] => 0.37649000
+            [open] => 0.30241000
+            [high] => 0.38112000
+            [low] => 0.29300000
+            [volume] => 975240.72000000
+            [quoteVolume] => 326908.77744250
+            [eventTime] => 1523395389582
+        )
+
+    [19] => Array
+        (
+            [symbol] => WANBTC
+            [close] => 0.00063657
+            [open] => 0.00054151
+            [high] => 0.00063900
+            [low] => 0.00053900
+            [volume] => 4443618.00000000
+            [quoteVolume] => 2637.76413131
+            [eventTime] => 1523395389551
+        )
+```
+</details>
+
 #### Realtime Complete Chart Updates via WebSockets
 ```php
 $api->chart(["BNBBTC"], "15m", function($api, $symbol, $chart) {
-    echo "{$symbol} chart update\n";
-    print_r($chart);
+	echo "{$symbol} chart update\n";
+	print_r($chart);
 });
 ```
 <details>
@@ -984,15 +1104,42 @@ $api->chart(["BNBBTC"], "15m", function($api, $symbol, $chart) {
 ```
 </details>
 
+#### Get latest candlestick data only
+```php
+$api->kline(["BTCUSDT", "EOSBTC"], "5m", function($api, $symbol, $chart) {
+  //echo "{$symbol} ({$interval}) candlestick update\n";
+	$interval = $chart->i;
+	$tick = $chart->t;
+	$open = $chart->o;
+	$high = $chart->h;
+	$low = $chart->l;
+	$close = $chart->c;
+	$volume = $chart->q; // +trades buyVolume assetVolume makerVolume
+	echo "{$symbol} price: {$close}\t volume: {$volume}\n";
+});
+```
 
 #### Trade Updates via WebSocket
 ```php
 $api->trades(["BNBBTC"], function($api, $symbol, $trades) {
-    echo "{$symbol} trades update".PHP_EOL;
-    print_r($trades);
+	echo "{$symbol} trades update".PHP_EOL;
+	print_r($trades);
 });
 ```
 
+#### Get ticker updates for all symbols via WebSocket
+```php
+$api->ticker(false, function($api, $symbol, $ticker) {
+	print_r($ticker);
+});
+```
+
+#### Get ticker updates for a specific symbol via WebSocket
+```php
+$api->ticker("BNBBTC", function($api, $symbol, $ticker) {
+	print_r($ticker);
+});
+```
 
 #### Realtime updated depth cache via WebSockets
 ```php
@@ -1117,6 +1264,7 @@ Balance update
 ```
 </details>
 
+
 #### Withdraw
 ```php
 $asset = "BTC";
@@ -1160,3 +1308,90 @@ print_r($depositAddress);
 $depositHistory = $api->depositHistory();
 print_r($depositHistory);
 ```
+
+### Troubleshooting
+If you get the following errors, please synchronize your system time.
+```
+signedRequest error: {"code":-1021,"msg":"Timestamp for this request was 1000ms ahead of the server's time."}
+signedRequest error: {"code":-1021,"msg":"Timestamp for this request is outside of the recvWindow."}
+balanceData error: Please make sure your system time is synchronized, or pass the useServerTime option.
+```
+
+#### useServerTime 
+```php
+//Call this before running any functions
+$api->useServerTime();
+```
+
+#### Installing on Windows
+Download and install composer:
+1. https://getcomposer.org/download/
+2. Create a folder on your drive like C:\Binance
+3. Run command prompt and type `cd C:\Binance`
+4. ```composer require jaggedsoft/php-binance-api```
+5. Once complete copy the vendor folder into your project.
+
+#### Config file in home directory
+If you dont wish to store your API key and secret in your scripts, load it from your home directory
+```bash
+mkdir -vp ~/.config/jaggedsoft/
+cat >  ~/.config/jaggedsoft/php-binance-api.json << EOF
+{
+    "api-key": "<api key>",
+    "api-secret": "<secret>"
+}
+EOF
+```
+
+#### Config file in home directory with curl options
+```bash
+mkdir -vp ~/.config/jaggedsoft/
+cat >  ~/.config/jaggedsoft/php-binance-api.json << EOF
+{
+    "api-key": "<api key>",
+    "api-secret": "<secret>",
+    "curlOpts": {
+	    "CURLOPT_SSL_VERIFYPEER": 0,
+	    "INVALID_CONSTANT_NAME": 42
+    }
+
+}
+EOF
+```
+
+
+Optionally add proxy configuration
+```bash
+mkdir -vp ~/.config/jaggedsoft/
+cat >  ~/.config/jaggedsoft/php-binance-api.json << EOF
+{
+    "api-key": "<api key>",
+    "api-secret": "<secret>",
+    "proto": "https",
+    "address": "proxy.domain.com",
+    "port": "1080"
+}
+EOF
+```
+
+custom location
+```php
+$api = new Binance\API( "myfile.json" );
+```
+
+
+#### Basic stats: Get api call counter
+```php
+$api->getRequestCount();
+```
+
+#### Basic stats: Get total data transferred
+```php
+$api->getTransfered();
+```
+
+
+
+### Documentation
+> There are also numerous other formats available here:
+https://github.com/jaggedsoft/php-binance-api/tree/gh-pages
